@@ -31,53 +31,101 @@ async function run() {
 
     const roomsCollection = client.db("hotelBooking").collection("rooms");
     const BookingRoomsCollection = client.db("hotelBooking").collection("bookingRooms");
+    const ReviewCollection = client.db("hotelBooking").collection("reviews");
 
     // get all rooms in DB
-    app.get("/rooms", async(req, res)=> {
-        const cursor = roomsCollection.find();
-        const result = await cursor.toArray();
-        res.send(result)
+    app.get("/rooms", async (req, res) => {
+      const cursor = roomsCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
     })
 
     // post korbo booking rooms
-    app.post('/rooms', async (req, res) => {
+    app.post('/bookingRooms', async (req, res) => {
       const room = req.body;
 
       // send user of mongoDB
       const result = await BookingRoomsCollection.insertOne(room);
       res.send(result)
-  })
+    })
 
-  // Availability update korbo
-  app.put('/rooms/:id', async(req, res)=> {
-    const id = req.params.id;
-    const availability = req.body;
-    console.log("id hoolo", id, "availability holo:", availability)
-    const filter = {_id: new ObjectId(id)};
-    const options = {upsert: true}
-    const updatedAvailability = {
+    // Availability update korbo
+    app.put('/rooms/:id', async (req, res) => {
+      const id = req.params.id;
+      const availability = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true }
+      const updatedAvailability = {
         $set: {
           Availability: availability.Availability
         }
-    }
-    const result = await roomsCollection.updateOne(filter, updatedAvailability, options)
-    res.send(result)
-})
+      }
+      const result = await roomsCollection.updateOne(filter, updatedAvailability, options)
+      res.send(result)
+    })
 
     // get specifid rooms with Id
-    app.get("/rooms/:id", async(req, res)=> {
-        const id = req.params.id;
-        const query = {_id: new ObjectId(id)};
-        const result = await roomsCollection.findOne(query);
-        res.send(result)
+    app.get("/rooms/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await roomsCollection.findOne(query);
+      res.send(result)
     })
+
+
+    // get specifid rooms with email
+    app.get('/bookingRoom/:email', async (req, res) => {
+      const email = req.params.email;
+      console.log(email)
+      const query = { userEmail: email }
+      const result = await BookingRoomsCollection.find(query).toArray();
+      res.send(result)
+    })
+
+
+    // bookingRoom theke room delete korbo
+    app.delete('/bookingRoom/:id', async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: new ObjectId(id) };
+      const result = await BookingRoomsCollection.deleteOne(query);
+      res.send(result)
+    })
+
+
+    // MyBooking page theke data update korbo
+    app.put('/bookingRoom/:id', async (req, res) => {
+      const id = req.params.id;
+      const { updateBookingDate } = req.body;
+      console.log(updateBookingDate)
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true }
+      const updatedDate = {
+        $set: {
+          bookingDate: updateBookingDate,
+        }
+      };
+      const result = await BookingRoomsCollection.updateOne(filter, updatedDate, options)
+      res.send(result)
+    })
+
+
+     // post korbo review
+     app.post('/reviews', async (req, res) => {
+      const review = req.body;
+console.log(review)
+      // send user of mongoDB
+      const result = await ReviewCollection.insertOne(review);
+      res.send(result)
+    })
+
+
 
 
     // Send a ping to confirm a successful connection
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
   } finally {
-    
-    
+
+
   }
 }
 run().catch(console.dir);
@@ -86,9 +134,9 @@ run().catch(console.dir);
 
 
 app.get("/", (req, res) => {
-    res.send("Home server is running")
+  res.send("Home server is running")
 })
 
 app.listen(port, () => {
-    console.log(`Home server is runig ${port}`)
+  console.log(`Home server is runig ${port}`)
 })
