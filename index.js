@@ -216,7 +216,7 @@ run().catch(console.dir);
 
 
 
-
+// normay get
 app.get("/", (req, res) => {
   res.send("Home server is running")
 })
