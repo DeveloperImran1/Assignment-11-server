@@ -1,17 +1,50 @@
 const express = require("express");
 const cors = require("cors");
 const app = express();
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser')
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173'],
+  credentials: true
+}));
 app.use(express.json());
+app.use(cookieParser())
 
 
-console.log(process.env.DB_USER)
-console.log(process.env.DB_PASS)
+
+// amader create kora middleware
+const logger = async (req, res, next) => {
+  console.log("called: ", req.host, req.originalUrl)
+  next();
+}
+
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+  console.log("Value of token in middleware", token)
+
+  // token na thakle
+  if (!token) {
+      return res.status(401).send({ message: 'Unauthorized access' })
+  }
+  // token thakle er moddhe asbe and ai token a kono vull thakele err hobe. sei err k akta message dia return kore diasi. 
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+      // error
+      if (err) {
+          console.log(err);
+          return res.status(401).send({ message: 'unauthorized' })
+      }
+
+      // if token is valid then it would be decoded
+      console.log("Value in the token: ", decoded)
+      req.user = decoded;
+      next()
+  })
+}
 
 
 
@@ -28,6 +61,39 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
+
+    // Token add korbo
+    app.post('/jwt', async (req, res) => {
+      const user = req.body;
+      console.log("User for token ", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" })
+
+      res.cookie('token', token, {
+        httpOnly: true,
+
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+      })
+        .send({ success: true })
+    })
+
+    // token remove korbo, jokhon /logout path a jabe.
+    app.post('/logout', async (req, res) => {
+      const user = req.body;
+      console.log("logged out user ", user)
+      res.clearCookie('token', {
+        maxAge: 0,
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
+      }).send({ success: true })
+    })
+
+
+
+
+
+    // ---------- 
 
     const roomsCollection = client.db("hotelBooking").collection("rooms");
     const BookingRoomsCollection = client.db("hotelBooking").collection("bookingRooms");
@@ -74,9 +140,8 @@ async function run() {
 
 
     // get specifid rooms with email
-    app.get('/bookingRoom/:email', async (req, res) => {
+    app.get('/bookingRoom/:email', logger, verifyToken, async (req, res) => {
       const email = req.params.email;
-      console.log(email)
       const query = { userEmail: email }
       const result = await BookingRoomsCollection.find(query).toArray();
       res.send(result)
@@ -109,16 +174,22 @@ async function run() {
     })
 
 
-     // post korbo review
-     app.post('/reviews', async (req, res) => {
+    // post korbo review
+    app.post('/reviews', async (req, res) => {
       const review = req.body;
-console.log(review)
+
       // send user of mongoDB
       const result = await ReviewCollection.insertOne(review);
       res.send(result)
     })
 
 
+    // get all reviews in DB
+    app.get("/reviews", async (req, res) => {
+      const cursor = ReviewCollection.find();
+      const result = await cursor.toArray();
+      res.send(result)
+    })
 
 
     // Send a ping to confirm a successful connection
