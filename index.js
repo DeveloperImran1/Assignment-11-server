@@ -19,7 +19,7 @@ app.use(cookieParser())
 
 // amader create kora middleware
 const logger = async (req, res, next) => {
-  console.log("called: ", req.host, req.originalUrl)
+  // console.log("called: ", req.host, req.originalUrl)
   next();
 }
 
@@ -29,20 +29,20 @@ const verifyToken = async (req, res, next) => {
 
   // token na thakle
   if (!token) {
-      return res.status(401).send({ message: 'Unauthorized access' })
+    return res.status(401).send({ message: 'Unauthorized access' })
   }
   // token thakle er moddhe asbe and ai token a kono vull thakele err hobe. sei err k akta message dia return kore diasi. 
   jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
-      // error
-      if (err) {
-          console.log(err);
-          return res.status(401).send({ message: 'unauthorized' })
-      }
+    // error
+    if (err) {
+      console.log(err);
+      return res.status(401).send({ message: 'unauthorized' })
+    }
 
-      // if token is valid then it would be decoded
-      console.log("Value in the token: ", decoded)
-      req.user = decoded;
-      next()
+    // if token is valid then it would be decoded
+    console.log("Value in the token: ", decoded)
+    req.user = decoded;
+    next()
   })
 }
 
@@ -65,7 +65,6 @@ async function run() {
     // Token add korbo
     app.post('/jwt', async (req, res) => {
       const user = req.body;
-      console.log("User for token ", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: "1h" })
 
       res.cookie('token', token, {
@@ -80,7 +79,7 @@ async function run() {
     // token remove korbo, jokhon /logout path a jabe.
     app.post('/logout', async (req, res) => {
       const user = req.body;
-      console.log("logged out user ", user)
+
       res.clearCookie('token', {
         maxAge: 0,
         httpOnly: true,
@@ -140,9 +139,23 @@ async function run() {
 
 
     // get specifid rooms with email
+    // app.get('/bookingRoom/:email', logger, verifyToken, async (req, res) => {
     app.get('/bookingRoom/:email', logger, verifyToken, async (req, res) => {
       const email = req.params.email;
-      const query = { userEmail: email }
+
+      console.log("params er email:", req.params.email)
+      console.log("user theke er email:", req.user.email)
+
+      // check now user valid kina
+      if (req.params.email !== req.user.email) {
+        return res.status(403).send({ message: "Forbidden access" })
+      }
+
+      let query = {};
+      if (req?.params?.email) {
+        query = { userEmail: email }
+      }
+
       const result = await BookingRoomsCollection.find(query).toArray();
       res.send(result)
     })
