@@ -98,6 +98,8 @@ async function run() {
     const BookingRoomsCollection = client.db("hotelBooking").collection("bookingRooms");
     const ReviewCollection = client.db("hotelBooking").collection("reviews");
 
+    //--------
+    
     // get all rooms in DB
     app.get("/rooms", async (req, res) => {
       const cursor = roomsCollection.find();
