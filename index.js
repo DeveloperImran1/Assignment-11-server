@@ -99,11 +99,19 @@ async function run() {
     const ReviewCollection = client.db("hotelBooking").collection("reviews");
 
     //--------
-    
+
     // get all rooms in DB
     app.get("/rooms", async (req, res) => {
-      const cursor = roomsCollection.find();
-      const result = await cursor.toArray();
+      const sort = req.query.sort;
+      let options = {};
+      if (sort) {
+        options = { sort: { PricePerNight: sort === 'asc' ? 1 : -1 } }
+        const result = await roomsCollection.find({}, options).toArray();
+        return res.send(result)
+      }
+      // const cursor = roomsCollection.find();
+      // const result = await cursor.toArray();
+      const result = await roomsCollection.find().toArray();
       res.send(result)
     })
 
@@ -201,8 +209,11 @@ async function run() {
 
     // get all reviews in DB
     app.get("/reviews", async (req, res) => {
-      const cursor = ReviewCollection.find();
-      const result = await cursor.toArray();
+      const options = { sort: { date: -1 } }
+      // const cursor = ReviewCollection.find();
+      // const result = await cursor.toArray();
+      // const cursor = ReviewCollection.find();
+      const result = await ReviewCollection.find({}, options).toArray();
       res.send(result)
     })
 
