@@ -184,7 +184,8 @@ async function run() {
     app.put('/bookingRoom/:id', async (req, res) => {
       const id = req.params.id;
       const { updateBookingDate } = req.body;
-      console.log(updateBookingDate)
+      
+      console.log("updateBookingDate", updateBookingDate)
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true }
       const updatedDate = {
@@ -216,6 +217,15 @@ async function run() {
       const result = await ReviewCollection.find({}, options).toArray();
       res.send(result)
     })
+
+        // get specifid review with Id
+        app.get("/review/:id", async (req, res) => {
+          const id = req.params.id;
+          const query = { RoomId: id};
+          const result = await ReviewCollection.find(query).toArray();
+          res.send(result)
+        })
+    
 
 
     // Send a ping to confirm a successful connection
