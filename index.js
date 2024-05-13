@@ -9,7 +9,7 @@ require('dotenv').config();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173'],
+  origin: ['http://localhost:5173', 'https://assignment-eleven-server-delta.vercel.app', 'https://assignment-eleven-6f668.web.app', 'https://assignment-eleven-6f668.firebaseapp.com'],
   credentials: true
 }));
 app.use(express.json());
