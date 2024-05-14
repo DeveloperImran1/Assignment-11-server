@@ -100,15 +100,11 @@ async function run() {
 
     //--------
 
+    // --------------------- Ager sort , filter and normaly all datal load er code: 
     // get all rooms in DB
     app.get("/rooms", async (req, res) => {
-      const sort = req.query.sort;
-      let options = {};
-      if (sort) {
-        options = { sort: { PricePerNight: sort === 'asc' ? 1 : -1 } }
-        const result = await roomsCollection.find({}, options).toArray();
-        return res.send(result)
-      }
+
+      // Price range a
       const from = parseInt(req.query.from);
       const to = parseInt(req.query.to);
       if (from && to) {
@@ -116,11 +112,48 @@ async function run() {
         const result = await roomsCollection.find({ PricePerNight: { $gte: from, $lte: to } }).toArray()
         return res.send(result)
       }
+      // acsending - descending order
+      const sort = req.query.sort;
+      let options = {};
+      if (sort) {
+        options = { sort: { PricePerNight: sort === 'asc' ? 1 : -1 } }
+        const result = await roomsCollection.find({}, options).toArray();
+        return res.send(result)
+      }
       // const cursor = roomsCollection.find();
       // const result = await cursor.toArray();
       const result = await roomsCollection.find().toArray();
       res.send(result)
     })
+
+    /// --------------------------
+
+
+    // get all rooms in DB
+    // app.get("/rooms", async (req, res) => {
+
+    //   // Price range a
+    //   const from = parseInt(req.query.from);
+    //   const to = parseInt(req.query.to);
+    //   if (from && to) {
+    //     console.log(from, to)
+    //     const result = await roomsCollection.find({ PricePerNight: { $gte: from, $lte: to } }).toArray()
+    //     return res.send(result)
+    //   }
+
+    //   const result = await roomsCollection.find().toArray();
+    //   res.send(result)
+    // })
+
+    app.get("/sort/:value", async (req, res) => {
+      // acsending - descending order
+      const sort = req.params.value;
+      let options = { sort: { PricePerNight: sort === 'asc' ? 1 : -1 } }
+      const result = await roomsCollection.find({}, options).toArray();
+      return res.send(result)
+    })
+
+
 
     // post korbo booking rooms
     app.post('/bookingRooms', async (req, res) => {
@@ -193,6 +226,7 @@ async function run() {
       const { updateBookingDate } = req.body;
 
       console.log("updateBookingDate", updateBookingDate)
+      console.log("ai id er date update koro", id)
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true }
       const updatedDate = {
