@@ -9,7 +9,7 @@ require('dotenv').config();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5173', 'https://assignment-eleven-server-delta.vercel.app', 'https://assignment-eleven-6f668.web.app', 'https://assignment-eleven-6f668.firebaseapp.com'],
+  origin: ['http://localhost:5174', 'http://localhost:5173', 'https://assignment-eleven-6f668.web.app', 'https://assignment-eleven-6f668.firebaseapp.com'],
   credentials: true
 }));
 app.use(express.json());
@@ -109,6 +109,13 @@ async function run() {
         const result = await roomsCollection.find({}, options).toArray();
         return res.send(result)
       }
+      const from = parseInt(req.query.from);
+      const to = parseInt(req.query.to);
+      if (from && to) {
+        console.log(from, to)
+        const result = await roomsCollection.find({ PricePerNight: { $gte: from, $lte: to } }).toArray()
+        return res.send(result)
+      }
       // const cursor = roomsCollection.find();
       // const result = await cursor.toArray();
       const result = await roomsCollection.find().toArray();
@@ -184,7 +191,7 @@ async function run() {
     app.put('/bookingRoom/:id', async (req, res) => {
       const id = req.params.id;
       const { updateBookingDate } = req.body;
-      
+
       console.log("updateBookingDate", updateBookingDate)
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true }
@@ -218,14 +225,14 @@ async function run() {
       res.send(result)
     })
 
-        // get specifid review with Id
-        app.get("/review/:id", async (req, res) => {
-          const id = req.params.id;
-          const query = { RoomId: id};
-          const result = await ReviewCollection.find(query).toArray();
-          res.send(result)
-        })
-    
+    // get specifid review with Id
+    app.get("/review/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { RoomId: id };
+      const result = await ReviewCollection.find(query).toArray();
+      res.send(result)
+    })
+
 
 
     // Send a ping to confirm a successful connection
