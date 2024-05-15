@@ -9,7 +9,7 @@ require('dotenv').config();
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:5174', 'http://localhost:5173', 'https://assignment-eleven-6f668.web.app', 'https://assignment-eleven-6f668.firebaseapp.com'],
+  origin: ['http://localhost:5174', 'http://localhost:5173', 'https://assignment-eleven-6f668.web.app', 'https://assignment-eleven-6f668.firebaseapp.com', 'https://room-intel.netlify.app'],
   credentials: true
 }));
 app.use(express.json());
@@ -120,38 +120,54 @@ async function run() {
         const result = await roomsCollection.find({}, options).toArray();
         return res.send(result)
       }
-      // const cursor = roomsCollection.find();
-      // const result = await cursor.toArray();
+   
       const result = await roomsCollection.find().toArray();
       res.send(result)
     })
 
     /// --------------------------
+  // -------AITA EDIT FOR DATE SORT
+//   app.get("/rooms", async (req, res) => {
+//     const query = {};
+
+//     // Price range filter
+//     const from = parseInt(req.query.from);
+//     const to = parseInt(req.query.to);
+
+//     if (from && to) {
+//         query.PricePerNight = { $gte: from, $lte: to };
+//     }
+
+//     // Sort
+//     const sort = req.query.sort;
+//     let sortKey = {};
+
+//     if (sort === 'asc') {
+//         sortKey = { PricePerNight: 1 };
+//     } else if (sort === 'dsc') {
+//         sortKey = { PricePerNight: -1 };
+//     }
+
+//     try {
+//         const result = await roomsCollection.find(query).sort(sortKey).toArray();
+//         res.send(result);
+//     } catch (err) {
+//         console.log("Sorting error", err);
+//         res.status(500).send("Internal Server Error");
+//     }
+// });
 
 
-    // get all rooms in DB
-    // app.get("/rooms", async (req, res) => {
+ 
 
-    //   // Price range a
-    //   const from = parseInt(req.query.from);
-    //   const to = parseInt(req.query.to);
-    //   if (from && to) {
-    //     console.log(from, to)
-    //     const result = await roomsCollection.find({ PricePerNight: { $gte: from, $lte: to } }).toArray()
-    //     return res.send(result)
-    //   }
-
-    //   const result = await roomsCollection.find().toArray();
-    //   res.send(result)
+    //----------------------
+    // app.get("/sort/:value", async (req, res) => {
+    //   // acsending - descending order
+    //   const sort = req.params.value;
+    //   let options = { sort: { PricePerNight: sort === 'asc' ? 1 : -1 } }
+    //   const result = await roomsCollection.find({}, options).toArray();
+    //   return res.send(result)
     // })
-
-    app.get("/sort/:value", async (req, res) => {
-      // acsending - descending order
-      const sort = req.params.value;
-      let options = { sort: { PricePerNight: sort === 'asc' ? 1 : -1 } }
-      const result = await roomsCollection.find({}, options).toArray();
-      return res.send(result)
-    })
 
 
 
