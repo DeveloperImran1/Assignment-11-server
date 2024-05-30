@@ -6,6 +6,7 @@ const cookieParser = require('cookie-parser')
 const port = process.env.PORT || 5000;
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 require('dotenv').config();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY)
 
 // Middleware
 app.use(cors({
@@ -62,6 +63,8 @@ const client = new MongoClient(uri, {
 async function run() {
   try {
 
+
+
     // Token add korbo
     app.post('/jwt', async (req, res) => {
       const user = req.body;
@@ -86,6 +89,28 @@ async function run() {
         secure: process.env.NODE_ENV === 'production',
         sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict'
       }).send({ success: true })
+    })
+
+
+    //  Payment method api
+    app.post('/create-payment-intent', async (req, res) => {
+      const { price } = req.body;
+
+      console.log(price)
+      const amount = parseInt(price) * 100;
+      console.log(amount)
+      if (!price || amount < 1) {
+        return;
+      }
+      const paymentIntent = await stripe.paymentIntents.create({
+        amount: amount,
+        currency: 'usd',
+        payment_method_types: ['card']
+      });
+
+      res.send({
+        clientSecret: paymentIntent.client_secret
+      })
     })
 
 
@@ -120,45 +145,45 @@ async function run() {
         const result = await roomsCollection.find({}, options).toArray();
         return res.send(result)
       }
-   
+
       const result = await roomsCollection.find().toArray();
       res.send(result)
     })
 
     /// --------------------------
-  // -------AITA EDIT FOR DATE SORT
-//   app.get("/rooms", async (req, res) => {
-//     const query = {};
+    // -------AITA EDIT FOR DATE SORT
+    //   app.get("/rooms", async (req, res) => {
+    //     const query = {};
 
-//     // Price range filter
-//     const from = parseInt(req.query.from);
-//     const to = parseInt(req.query.to);
+    //     // Price range filter
+    //     const from = parseInt(req.query.from);
+    //     const to = parseInt(req.query.to);
 
-//     if (from && to) {
-//         query.PricePerNight = { $gte: from, $lte: to };
-//     }
+    //     if (from && to) {
+    //         query.PricePerNight = { $gte: from, $lte: to };
+    //     }
 
-//     // Sort
-//     const sort = req.query.sort;
-//     let sortKey = {};
+    //     // Sort
+    //     const sort = req.query.sort;
+    //     let sortKey = {};
 
-//     if (sort === 'asc') {
-//         sortKey = { PricePerNight: 1 };
-//     } else if (sort === 'dsc') {
-//         sortKey = { PricePerNight: -1 };
-//     }
+    //     if (sort === 'asc') {
+    //         sortKey = { PricePerNight: 1 };
+    //     } else if (sort === 'dsc') {
+    //         sortKey = { PricePerNight: -1 };
+    //     }
 
-//     try {
-//         const result = await roomsCollection.find(query).sort(sortKey).toArray();
-//         res.send(result);
-//     } catch (err) {
-//         console.log("Sorting error", err);
-//         res.status(500).send("Internal Server Error");
-//     }
-// });
+    //     try {
+    //         const result = await roomsCollection.find(query).sort(sortKey).toArray();
+    //         res.send(result);
+    //     } catch (err) {
+    //         console.log("Sorting error", err);
+    //         res.status(500).send("Internal Server Error");
+    //     }
+    // });
 
 
- 
+
 
     //----------------------
     // app.get("/sort/:value", async (req, res) => {
