@@ -20,14 +20,14 @@ Visit the live site at [RoomIntel Live](https://room-intel.netlify.app/)
 
 ## How to Start This Application:
 1. **Clone the Repositories:**
-    ```sh
+   ```sh
     # Client Side:
-    git clone https://github.com/DeveloperImran1/Assignment-11-Client.git
+    git clone https://github.com/DeveloperImran1/RoomIntel-Client.git
     cd Assignment-11-Client
     ```
     ```sh
     # Server Side:
-    git clone https://github.com/DeveloperImran1/Assignment-11-server.git
+    git clone https://github.com/DeveloperImran1/RoomIntel-server.git
     cd Assignment-11-server
     ```
 2. **Install Dependencies:**
@@ -49,7 +49,7 @@ Visit the live site at [RoomIntel Live](https://room-intel.netlify.app/)
 
 ## Client Side Github link:
 
-<a href="https://github.com/DeveloperImran1/Assignment-11-client">Server Code<a/>
+<a href="https://github.com/DeveloperImran1/RoomIntel-Client">Server Code<a/>
 
 
 ## Dependencies
